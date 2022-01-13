@@ -1,4 +1,4 @@
-# Seismic-Visualization
+# Seismic Visualization
 ## Description ##
 Web-based tool for seismic visualization that runs in a browser and connects to a data source using WebSockets
 * Graph that displays either real-time or archived seismic data
