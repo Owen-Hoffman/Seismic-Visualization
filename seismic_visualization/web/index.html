@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <!--
+    <!--
     If you are serving your web app in a path other than the root, change the
     href value below to reflect the base path you are serving from.
 
@@ -14,91 +15,143 @@
     This is a placeholder for base href that will be replaced by the value of
     the `--base-href` argument provided to `flutter build`.
   -->
-  <base href="$FLUTTER_BASE_HREF">
+    <script src="app.js" defer></script>
+    <base href="$FLUTTER_BASE_HREF">
 
-  <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+    <meta charset="UTF-8">
+    <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+    <meta name="description" content="A new Flutter project.">
 
-  <!-- iOS meta tags & icons -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="seismic_visualization">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+    <!-- iOS meta tags & icons -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="seismic_visualization">
+    <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="favicon.png" />
 
-  <title>seismic_visualization</title>
-  <link rel="manifest" href="manifest.json">
+    <title>seismic_visualization</title>
+    <link rel="manifest" href="manifest.json">
 </head>
+
 <body>
-  <!-- This script installs service_worker.js to provide PWA functionality to
+    <!-- This script installs service_worker.js to provide PWA functionality to
        application. For more information, see:
        https://developers.google.com/web/fundamentals/primers/service-workers -->
-  <script>
-    var serviceWorkerVersion = null;
-    var scriptLoaded = false;
-    function loadMainDartJs() {
-      if (scriptLoaded) {
-        return;
-      }
-      scriptLoaded = true;
-      var scriptTag = document.createElement('script');
-      scriptTag.src = 'main.dart.js';
-      scriptTag.type = 'application/javascript';
-      document.body.append(scriptTag);
-    }
+    <script>
+        var serviceWorkerVersion = null;
+        var scriptLoaded = false;
 
-    if ('serviceWorker' in navigator) {
-      // Service workers are supported. Use them.
-      window.addEventListener('load', function () {
-        // Wait for registration to finish before dropping the <script> tag.
-        // Otherwise, the browser will load the script multiple times,
-        // potentially different versions.
-        var serviceWorkerUrl = 'flutter_service_worker.js?v=' + serviceWorkerVersion;
-        navigator.serviceWorker.register(serviceWorkerUrl)
-          .then((reg) => {
-            function waitForActivation(serviceWorker) {
-              serviceWorker.addEventListener('statechange', () => {
-                if (serviceWorker.state == 'activated') {
-                  console.log('Installed new service worker.');
-                  loadMainDartJs();
-                }
-              });
+        function loadMainDartJs() {
+            if (scriptLoaded) {
+                return;
             }
-            if (!reg.active && (reg.installing || reg.waiting)) {
-              // No active web worker and we have installed or are installing
-              // one for the first time. Simply wait for it to activate.
-              waitForActivation(reg.installing || reg.waiting);
-            } else if (!reg.active.scriptURL.endsWith(serviceWorkerVersion)) {
-              // When the app updates the serviceWorkerVersion changes, so we
-              // need to ask the service worker to update.
-              console.log('New service worker available.');
-              reg.update();
-              waitForActivation(reg.installing);
-            } else {
-              // Existing service worker is still good.
-              console.log('Loading app from service worker.');
-              loadMainDartJs();
-            }
-          });
+            scriptLoaded = true;
+            var scriptTag = document.createElement('script');
+            scriptTag.src = 'main.dart.js';
+            scriptTag.type = 'application/javascript';
+            document.body.append(scriptTag);
+        }
 
-        // If service worker doesn't succeed in a reasonable amount of time,
-        // fallback to plaint <script> tag.
-        setTimeout(() => {
-          if (!scriptLoaded) {
-            console.warn(
-              'Failed to load app from service worker. Falling back to plain <script> tag.',
-            );
+        if ('serviceWorker' in navigator) {
+            // Service workers are supported. Use them.
+            window.addEventListener('load', function() {
+                // Wait for registration to finish before dropping the <script> tag.
+                // Otherwise, the browser will load the script multiple times,
+                // potentially different versions.
+                var serviceWorkerUrl = 'flutter_service_worker.js?v=' + serviceWorkerVersion;
+                navigator.serviceWorker.register(serviceWorkerUrl)
+                    .then((reg) => {
+                        function waitForActivation(serviceWorker) {
+                            serviceWorker.addEventListener('statechange', () => {
+                                if (serviceWorker.state == 'activated') {
+                                    console.log('Installed new service worker.');
+                                    loadMainDartJs();
+                                }
+                            });
+                        }
+                        if (!reg.active && (reg.installing || reg.waiting)) {
+                            // No active web worker and we have installed or are installing
+                            // one for the first time. Simply wait for it to activate.
+                            waitForActivation(reg.installing || reg.waiting);
+                        } else if (!reg.active.scriptURL.endsWith(serviceWorkerVersion)) {
+                            // When the app updates the serviceWorkerVersion changes, so we
+                            // need to ask the service worker to update.
+                            console.log('New service worker available.');
+                            reg.update();
+                            waitForActivation(reg.installing);
+                        } else {
+                            // Existing service worker is still good.
+                            console.log('Loading app from service worker.');
+                            loadMainDartJs();
+                        }
+                    });
+
+                // If service worker doesn't succeed in a reasonable amount of time,
+                // fallback to plaint <script> tag.
+                setTimeout(() => {
+                    if (!scriptLoaded) {
+                        console.warn(
+                            'Failed to load app from service worker. Falling back to plain <script> tag.',
+                        );
+                        loadMainDartJs();
+                    }
+                }, 4000);
+            });
+        } else {
+            // Service workers not supported. Just drop the <script> tag.
             loadMainDartJs();
-          }
-        }, 4000);
-      });
-    } else {
-      // Service workers not supported. Just drop the <script> tag.
-      loadMainDartJs();
-    }
-  </script>
+        }
+    </script>
+    <h3>Helicorder Plots for South Carolina Seismic Network Stations:</h3>
+    <div id="scsnStations">
+        <form><label class="rbgroup" title="Stations within the South Carolina Seismic Network">Stations:</label>
+        </form>
+    </div>
+    <div>
+        <span id="loccode"><label class="rbgroup">Loc Code: </label></span>
+        <span id="instruments"><label class="rbgroup">Instrument: </label></span>
+        <span id="orientations"><label class="rbgroup">Orientation: </label></span>
+    </div>
+    <div id="amp"><label class="rbgroup" title="Amplitude Range">Amp Range: </label>
+        <span><input type="radio" id="maxAmp" class="shape" name="ampMode" value="0" checked="true">Max Value </input></span>
+        <span>
+        <input type="radio" id="fixedAmp" class="shape" name="ampMode" value="1">
+        <label>Fixed: </label><input type="text" id="fixedAmpText" name="fixedAmp" pattern="[1-9][0-9]*" value="10000"></input>
+      </span>
+        <span>
+        <input type="radio" id="percentAmp" class="shape" name="ampMode" value="2">
+        <label>Percent: </label><input type="range" min="1" max="100" id="percentAmpSlider" value="100"><span id="percentValue">100</span>
+        </span>
+    </div>
+    <div id="times">
+        <label class="rbgroup">Time Range: </label>
+        <button id="loadToday">Today</button>
+        <button id="loadNow">Now</button>
+        <button id="loadPrev">Previous</button>
+        <button id="loadNext">Next</button>
+        <span id="datechooser" />
+    </div>
+
+    <h3><span class="textNetCode"></span>.<span class="textStaCode"></span>.<span class="textLocCode">00</span>.<span class="textChanCode">H??</span> from <span class="startTime"></span> to <span class="endTime"></span>.</h3>
+
+    <div class='heli'>
+    </div>
+    <div id="minmax">
+        Min: <span id="minAmp"></span> Max: <span id="maxAmp"></span> Mean: <span id="meanAmp"></span> Display+-: <span id="varyAmp"></span>
+    </div>
+    <p>Note that data may be delayed up to 15 minutes due to buffering.</p>
+
+    <p>Generated with <a href="https://github.com/crotwell/seisplotjs">Seisplotjs version <span id="version">2</span></a>.</p>
+
+
+    <script src="https://www.seis.sc.edu/downloads/seisplotjs/seisplotjs_2.0.1_standalone.js"></script>
+    <script src="doplot.js"></script>
+    <script src="heli.js"></script>
+    <script>
+        seisplotjs.d3.select("#version").text(seisplotjs.version);
+    </script>
 </body>
+
 </html>
