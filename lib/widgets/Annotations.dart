@@ -4,32 +4,44 @@ import 'dart:convert';
 import 'dart:async';
 
 class Album {
-  final int userId;
-  final int id;
-  final String title;
+  final String type;
+  final Meta metadata;
 
   const Album({
-    required this.userId,
-    required this.id,
-    required this.title,
+    required this.type,
+    required this.metadata,
   });
 
   factory Album.fromJson(Map<String, dynamic> json) {
     return Album(
-      userId: json['userId'],
-      id: json['id'],
-      title: json['title'],
+      type: json['type'],
+      metadata: Meta.fromJson(json['metadata']),
+    );
+  }
+}
+
+class Meta {
+  final double generated;
+
+  const Meta({
+    required this.generated,
+  });
+
+  factory Meta.fromJson(Map<String, dynamic> json) {
+    return Meta(
+      generated: json['generated'],
     );
   }
 }
 
 Future<Album> fetchAlbum() async {
-  final response = await http
-      .get(Uri.parse('https://jsonplaceholder.typicode.com/albums/1'));
+  final response = await http.get(Uri.parse(
+      'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_day.geojson'));
 
   if (response.statusCode == 200) {
     // If the server did return a 200 OK response,
     // then parse the JSON.
+    // print(Album.metadata[0].generated)
     return Album.fromJson(jsonDecode(response.body));
   } else {
     // If the server did not return a 200 OK response,
@@ -72,7 +84,7 @@ class _MyAppState extends State<MyApp> {
             future: futureAlbum,
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                return Text(snapshot.data!.title);
+                return Text(snapshot.data!.type);
               } else if (snapshot.hasError) {
                 return Text('${snapshot.error}');
               }
