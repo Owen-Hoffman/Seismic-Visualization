@@ -50,13 +50,14 @@ class _MyHomePageState extends State<MyHomePage> {
     div.text = 'New Div Element';
     document.body?.children.add(div);
 
-    // ui.platformViewRegistry.registerViewFactory(
-    //     'test-view-type',
-    //     (int viewId) => IFrameElement()
-    //       ..width = '640'
-    //       ..height = '360'
-    //       ..src = 'graphTutorial.html'
-    //       ..style.border = 'none');
+//    ui.platformViewRegistry.registerViewFactory(
+//         'test-view-type',
+//         (int viewId) => IFrameElement()
+//           ..width = '640'
+//           ..height = '360'
+//           ..src = 'graphTutorial.html'
+//           // ..src = "https://www.youtube.com/embed/5VbAwhBBHsg"
+//           ..style.border = 'none');
 
     return Scaffold(
       appBar: AppBar(
