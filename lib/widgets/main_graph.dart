@@ -23,8 +23,9 @@ class _MyHomePageState extends State<RealTimeData> {
     chartData = getChartData();
 
     _zoomPanBehavior = ZoomPanBehavior(
-        // Performs zooming on double tap
-        enableDoubleTapZooming: true);
+        enableDoubleTapZooming: true,
+        zoomMode: ZoomMode.xy,
+        enablePanning: true);
 
     Timer.periodic(const Duration(seconds: 2), updateDataSource);
     super.initState();

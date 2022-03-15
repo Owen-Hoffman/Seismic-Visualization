@@ -15,8 +15,10 @@ class _MyHomePageState extends State<Helicorder> {
   @override
   void initState() {
     _zoomPanBehavior = ZoomPanBehavior(
-        // Performs zooming on double tap
-        enableDoubleTapZooming: true);
+      enableDoubleTapZooming: true,
+      zoomMode: ZoomMode.xy,
+      enablePanning: true,
+    );
     super.initState();
   }
 
