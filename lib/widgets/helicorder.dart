@@ -1,29 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
-void main() {
-  return runApp(Helicorder());
-}
-
-class Helicorder extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(primarySwatch: Colors.green),
-      home: _MyHomePage(),
-    );
-  }
-}
-
-class _MyHomePage extends StatefulWidget {
+class Helicorder extends StatefulWidget {
   // ignore: prefer_const_constructors_in_immutables
-  _MyHomePage({Key? key}) : super(key: key);
+  Helicorder({Key? key}) : super(key: key);
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<_MyHomePage> {
+class _MyHomePageState extends State<Helicorder> {
+  late ZoomPanBehavior _zoomPanBehavior;
+
+  @override
+  void initState() {
+    _zoomPanBehavior = ZoomPanBehavior(
+        // Performs zooming on double tap
+        enableDoubleTapZooming: true);
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,7 +29,7 @@ class _MyHomePageState extends State<_MyHomePage> {
               primary: Colors.white,
             ),
             onPressed: () {
-              Navigator.pushNamed(context, '/RealTimeRoute');
+              Navigator.pushNamed(context, '/');
             },
             child: const Text('Realtime Graph'),
           ),
@@ -44,6 +40,7 @@ class _MyHomePageState extends State<_MyHomePage> {
               height: 1920,
               width: 1080,
               child: SfCartesianChart(
+                  zoomPanBehavior: _zoomPanBehavior,
                   backgroundColor: Colors.white,
                   primaryXAxis: DateTimeAxis(
                       majorGridLines: MajorGridLines(width: 0),

@@ -7,9 +7,10 @@ void main() {
     debugShowCheckedModeBanner: false,
     initialRoute: '/',
     routes: {
-      '/': (context) => RealTimeData(),
-      '/RealTimeRoute': (context) => RealTimeData(),
-      '/HelicorderRoute': (context) => Helicorder(),
+      '/': (context) => RealTimeData(
+            title: '',
+          ),
+      '/Helicorder': (context) => Helicorder(),
     },
   ));
 }
