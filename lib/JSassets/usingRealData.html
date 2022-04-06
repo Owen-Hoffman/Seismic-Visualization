@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset='utf-8'>
+    <title>Tutorial 2: Real Data</title>
+    <style>
+      div.seismograph {
+        height: 300px;
+      }
+    </style>
+  </head>
+  <body>
+    <h3>Tutorial 2: Real Data</h3>
+    <h3>A Seismograph!</h3>
+    <p id="testing"></p>
+    <div class="seismograph" id="myseismograph">
+    </div>
+
+    <script src="https://www.seis.sc.edu/downloads/seisplotjs/seisplotjs_2.0.1_standalone.js"></script>
+    <script>
+    let timeWindow = new seisplotjs.util.StartEndDuration('2019-07-06T03:19:53Z', null, 1800);
+    let dsQuery = new seisplotjs.fdsndataselect.DataSelectQuery();
+    dsQuery.networkCode('CO')
+      .stationCode('HODGE')
+      .locationCode('00')
+      .channelCode('LHZ')
+      .timeWindow(timeWindow);
+    dsQuery.querySeismograms().then(seisArray => {
+        // only plot the first seismogram
+        let seismogram = seisArray[0];
+        let div = seisplotjs.d3.select('div#myseismograph');
+        let seisConfig = new seisplotjs.seismographconfig.SeismographConfig();
+        seisConfig.title = seismogram.codes();
+        let seisData = seisplotjs.seismogram.SeismogramDisplayData.fromSeismogram(seismogram);
+        let graph = new seisplotjs.seismograph.Seismograph(div, seisConfig, seisData);
+        // graph.draw();
+        console.log(graph);
+        var graphText = JSON.stringify(graph);
+        document.write(graphText);
+      });
+    </script>
+  </body>
+</html>
