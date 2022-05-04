@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset='utf-8'>
+    <title>Tutorial 7: Realtime</title>
+    <style>
+        div#realtime div.seismograph {
+            height: 300px;
+        }
+    </style>
+</head>
+
+<body>
+    <h3>Tutorial 7: Realtime</h3>
+    <h3>Realtime display for <span id="channel"></span></h3>
+
+    <button id="disconnect">Disconnect</button>
+    <button id="pause">Pause</button>
+    Packets: <span id="numPackets">0</span>
+    <div id="realtime">
+    </div>
+
+    <div id="debug">
+    </div>
+    <script src="https://www.seis.sc.edu/downloads/seisplotjs/seisplotjs_2.0.1_standalone.js"></script>
+    <script>
+        const matchPattern = `CO_JSC_00_HH./MSEED`;
+        seisplotjs.d3.select('span#channel').text(matchPattern);
+        const duration = seisplotjs.moment.duration(2, 'minutes');
+        const timeWindow = new seisplotjs.util.StartEndDuration(null, null, duration);
+        const seisPlotConfig = new seisplotjs.seismographconfig.SeismographConfig();
+        seisPlotConfig.wheelZoom = false;
+        let graphList = new Map();
+        let numPackets = 0;
+        let realtimeDiv = seisplotjs.d3.select("div#realtime");
+        let rect = realtimeDiv.node().getBoundingClientRect();
+        let timerInterval = duration.asMilliseconds() /
+            (rect.width - seisPlotConfig.margin.left - seisPlotConfig.margin.right);
+        console.log("start time with interval " + timerInterval);
+        while (timerInterval < 100) { timerInterval *= 2; }
+
+        const errorFn = function (error) {
+            console.assert(false, error);
+            if (datalink) { datalink.close(); }
+            seisplotjs.d3.select("p#error").text("Error: " + error);
+        };
+
+
+        const packetHandler = function (packet) {
+            if (packet.isMiniseed()) {
+                numPackets++;
+                seisplotjs.d3.select("span#numPackets").text(numPackets);
+                let seisSegment = seisplotjs.miniseed.createSeismogramSegment(packet.miniseed);
+                const codes = seisSegment.codes();
+                let seisPlot = graphList.get(codes);
+                if (!seisPlot) {
+                    let seismogram = new seisplotjs.seismogram.Seismogram([seisSegment]);
+                    let seisData = seisplotjs.seismogram.SeismogramDisplayData.fromSeismogram(seismogram);
+                    let plotDiv = realtimeDiv.append("div").classed("seismograph", true);
+                    let myseisPlotConfig = seisPlotConfig.clone();
+                    myseisPlotConfig.title = codes;
+                    seisPlot = new seisplotjs.seismograph.Seismograph(plotDiv, myseisPlotConfig, seisData);
+                    graphList.set(codes, seisPlot);
+                    console.log(`new plot: ${codes}`)
+
+                    var graphText = JSON.stringify(seisData);
+                    console.log(graphText)
+                } else {
+                    seisPlot.seisDataList[0].seismogram.append(seisSegment);
+                }
+                seisPlot.draw();
+            } else {
+                console.log(`not a mseed packet: ${packet.streamId}`)
+            }
+
+        };
+
+        const datalink = new seisplotjs.datalink.DataLinkConnection(
+            seisplotjs.datalink.IRIS_RINGSERVER_URL,
+            packetHandler,
+            errorFn);
+
+        let toggleConnect = function () {     
+                    datalink.connect()
+                        .then(serverId => {
+                            console.log(`id response: ${serverId}`);
+                            return datalink.match(matchPattern);
+                        }).then(response => {
+                            console.log(`match response: ${response}`)
+                            return datalink.positionAfter(timeWindow.start);
+                        }).then(response => {
+                            console.log(`positionAfter response: ${response}`)
+                            return datalink.stream();
+                        }).catch(function (error) {
+                            seisplotjs.d3.select("div#debug").append('p').html("Error: " + error);
+                            console.assert(false, error);
+                        });  
+        }
+
+        toggleConnect();
+
+    </script>
+</body>
+
+</html>

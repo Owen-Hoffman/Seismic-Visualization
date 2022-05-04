@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -27,7 +28,7 @@
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" href="favicon.png" />
 
   <!-- SCR for seisplot -->
   <script src="https://www.seis.sc.edu/downloads/seisplotjs/seisplotjs_2.0.1_standalone.js"></script>
@@ -35,13 +36,41 @@
   <title>demo</title>
   <link rel="manifest" href="manifest.json">
 </head>
+
 <body>
   <!-- This script installs service_worker.js to provide PWA functionality to
        application. For more information, see:
-       https://developers.google.com/web/fundamentals/primers/service-workers -->  
+       https://developers.google.com/web/fundamentals/primers/service-workers -->
   <script>
     var serviceWorkerVersion = null;
     var scriptLoaded = false;
+    async function getSeismicData(stationCode) {
+      let timeWindow = new seisplotjs.util.StartEndDuration('2019-07-06T03:19:53Z', null, 1800);
+      let dsQuery = new seisplotjs.fdsndataselect.DataSelectQuery();
+      dsQuery.networkCode('CO')
+        .stationCode(stationCode)
+        .locationCode('00')
+        .channelCode('LHZ')
+        .timeWindow(timeWindow);
+      queryPromise = dsQuery.querySeismograms();
+      seisArray = await queryPromise;
+        let seismogram = seisArray[0];
+        let seisData = seisplotjs.seismogram.SeismogramDisplayData.fromSeismogram(seismogram);
+        let div = seisplotjs.d3.select('div#myseismograph');
+        let seisConfig = new seisplotjs.seismographconfig.SeismographConfig();
+        seisConfig.title = seismogram.codes();
+        let graph = new seisplotjs.seismograph.Seismograph(div, seisConfig, seisData);
+
+        var graphText = JSON.stringify(seisData);
+        // console.log(JSON.stringify(div));
+        // console.log(JSON.stringify(seismogram));
+        // console.log(JSON.stringify(seisConfig));
+        // console.log(JSON.stringify(graph));
+
+        return graphText;
+    }
+    // getSeismicData('CO', 'HODGE', '00', 'LHZ').then(data => { console.log(data); });
+
     function loadMainDartJs() {
       if (scriptLoaded) {
         return;
@@ -104,4 +133,5 @@
     }
   </script>
 </body>
+
 </html>
