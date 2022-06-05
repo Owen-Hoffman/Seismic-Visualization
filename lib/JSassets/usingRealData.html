@@ -21,7 +21,9 @@
   <script src="https://www.seis.sc.edu/downloads/seisplotjs/seisplotjs_2.0.1_standalone.js"></script>
   <script>
     function getSeismicData(myNetworkCode, stationCode, locationCode, channelCode) {
-      let timeWindow = new seisplotjs.util.StartEndDuration('2019-07-06T03:19:53Z', null, 1800);
+      const plotEnd = seisplotjs.moment.utc().endOf('hour').add(1, 'millisecond');
+            if (plotEnd.hour() % 2 === 1) { plotEnd.add(1, 'hour'); }
+      let timeWindow = new seisplotjs.util.StartEndDuration(null, plotEnd, seisplotjs.moment.duration(1, 'day'));
       let dsQuery = new seisplotjs.fdsndataselect.DataSelectQuery();
       dsQuery.networkCode(myNetworkCode)
         .stationCode(stationCode)

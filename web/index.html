@@ -44,31 +44,49 @@
   <script>
     var serviceWorkerVersion = null;
     var scriptLoaded = false;
-    async function getSeismicData(stationCode) {
-      let timeWindow = new seisplotjs.util.StartEndDuration('2019-07-06T03:19:53Z', null, 1800);
+    async function getSeismicData(networkCode, stationCode, locationCode, channelCode) {
+      const plotEnd = seisplotjs.moment.utc().endOf('hour').add(1, 'millisecond');
+      let timeWindow = new seisplotjs.util.StartEndDuration('2022-04-06T00:00:53Z', null, seisplotjs.moment.duration(24, 'hours'));      
       let dsQuery = new seisplotjs.fdsndataselect.DataSelectQuery();
-      dsQuery.networkCode('CO')
+      dsQuery.networkCode(networkCode)
         .stationCode(stationCode)
-        .locationCode('00')
-        .channelCode('LHZ')
+        .locationCode(locationCode)
+        .channelCode(channelCode)
         .timeWindow(timeWindow);
       queryPromise = dsQuery.querySeismograms();
       seisArray = await queryPromise;
-        let seismogram = seisArray[0];
-        let seisData = seisplotjs.seismogram.SeismogramDisplayData.fromSeismogram(seismogram);
-        let div = seisplotjs.d3.select('div#myseismograph');
-        let seisConfig = new seisplotjs.seismographconfig.SeismographConfig();
-        seisConfig.title = seismogram.codes();
-        let graph = new seisplotjs.seismograph.Seismograph(div, seisConfig, seisData);
+      let seismogram = seisArray[0];
+      let seisData = seisplotjs.seismogram.SeismogramDisplayData.fromSeismogram(seismogram);
+      let div = seisplotjs.d3.select('div#myseismograph');
+      let seisConfig = new seisplotjs.seismographconfig.SeismographConfig();
+      seisConfig.title = seismogram.codes();
+      let graph = new seisplotjs.seismograph.Seismograph(div, seisConfig, seisData);
 
-        var graphText = JSON.stringify(seisData);
-        // console.log(JSON.stringify(div));
-        // console.log(JSON.stringify(seismogram));
-        // console.log(JSON.stringify(seisConfig));
-        // console.log(JSON.stringify(graph));
-
-        return graphText;
+      var graphText = JSON.stringify(seisData);
+      return graphText;
     }
+    async function getLiveSeismicData(networkCode, stationCode, locationCode, channelCode) {
+      const duration = seisplotjs.moment.duration(5, 'minutes');
+      let timeWindow = new seisplotjs.util.StartEndDuration(null, null, duration);      
+      let dsQuery = new seisplotjs.fdsndataselect.DataSelectQuery();
+      dsQuery.networkCode(networkCode)
+        .stationCode(stationCode)
+        .locationCode(locationCode)
+        .channelCode(channelCode)
+        .timeWindow(timeWindow);
+      queryPromise = dsQuery.querySeismograms();
+      seisArray = await queryPromise;
+      let seismogram = seisArray[0];
+      let seisData = seisplotjs.seismogram.SeismogramDisplayData.fromSeismogram(seismogram);
+      let div = seisplotjs.d3.select('div#myseismograph');
+      let seisConfig = new seisplotjs.seismographconfig.SeismographConfig();
+      seisConfig.title = seismogram.codes();
+      let graph = new seisplotjs.seismograph.Seismograph(div, seisConfig, seisData);
+
+      var graphText = JSON.stringify(seisData);
+      return graphText;
+    }
+
     // getSeismicData('CO', 'HODGE', '00', 'LHZ').then(data => { console.log(data); });
 
     function loadMainDartJs() {

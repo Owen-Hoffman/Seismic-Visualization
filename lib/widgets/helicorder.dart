@@ -1,5 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:seismic_visualization/widgets/jsonParser.dart';
 
 class Helicorder extends StatefulWidget {
   // ignore: prefer_const_constructors_in_immutables
@@ -11,139 +14,233 @@ class Helicorder extends StatefulWidget {
 
 class _MyHomePageState extends State<Helicorder> {
   late ZoomPanBehavior _zoomPanBehavior;
+  late TooltipBehavior _tooltipBehavior;
+
+  late Future<List<DataList>> futureChartData;
+  late int size;
+
+  Future<void> getChartData() async {
+    futureChartData = dataParsing();
+  }
 
   @override
   void initState() {
+    _tooltipBehavior = TooltipBehavior(enable: true, format: 'point.y');
     _zoomPanBehavior = ZoomPanBehavior(
       enableDoubleTapZooming: true,
       zoomMode: ZoomMode.xy,
       enablePanning: true,
     );
+    getChartData();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: const Text('Helicorder'), actions: <Widget>[
-          TextButton(
-            style: TextButton.styleFrom(
-              primary: Colors.white,
+        appBar: AppBar(
+            centerTitle: true,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            title: const Text(
+              'Helicorder',
+              style: TextStyle(
+                color: Colors.black,
+              ),
             ),
-            onPressed: () {
-              Navigator.pushNamed(context, '/');
-            },
-            child: const Text('Realtime Graph'),
-          ),
-        ]),
+            actions: <Widget>[
+              TextButton(
+                style: TextButton.styleFrom(
+                  primary: Colors.black,
+                ),
+                onPressed: () {
+                  Navigator.pushNamed(context, '/');
+                },
+                child: const Text('Realtime'),
+              ),
+            ]),
         body: Center(
-          //Initialize the chart widget
-          child: Container(
-              height: 1920,
-              width: 1080,
-              child: SfCartesianChart(
-                  zoomPanBehavior: _zoomPanBehavior,
-                  backgroundColor: Colors.white,
-                  primaryXAxis: DateTimeAxis(
-                      majorGridLines: MajorGridLines(width: 0),
-                      edgeLabelPlacement: EdgeLabelPlacement.shift,
-                      intervalType: DateTimeIntervalType.minutes),
-                  series: <ChartSeries<ChartSampleData, DateTime>>[
-                    StackedLineSeries<ChartSampleData, DateTime>(
-                      dataSource: chartData,
-                      xValueMapper: (ChartSampleData sales, _) => sales.x,
-                      yValueMapper: (ChartSampleData sales, _) => sales.yValue,
-                      name: '0-2',
-                    ),
-                    StackedLineSeries<ChartSampleData, DateTime>(
-                      dataSource: chartData,
-                      xValueMapper: (ChartSampleData sales, _) => sales.x,
-                      yValueMapper: (ChartSampleData sales, _) => sales.yValue,
-                      name: '2-4',
-                    ),
-                    StackedLineSeries<ChartSampleData, DateTime>(
-                      dataSource: chartData,
-                      xValueMapper: (ChartSampleData sales, _) => sales.x,
-                      yValueMapper: (ChartSampleData sales, _) => sales.yValue,
-                      name: '4-6',
-                    ),
-                    StackedLineSeries<ChartSampleData, DateTime>(
-                      dataSource: chartData,
-                      xValueMapper: (ChartSampleData sales, _) => sales.x,
-                      yValueMapper: (ChartSampleData sales, _) => sales.yValue,
-                      name: '6-8',
-                    ),
-                    StackedLineSeries<ChartSampleData, DateTime>(
-                      dataSource: chartData,
-                      xValueMapper: (ChartSampleData sales, _) => sales.x,
-                      yValueMapper: (ChartSampleData sales, _) => sales.yValue,
-                      name: '8-10',
-                    ),
-                    StackedLineSeries<ChartSampleData, DateTime>(
-                      dataSource: chartData,
-                      xValueMapper: (ChartSampleData sales, _) => sales.x,
-                      yValueMapper: (ChartSampleData sales, _) => sales.yValue,
-                      name: '10-12',
-                    ),
-                    StackedLineSeries<ChartSampleData, DateTime>(
-                      dataSource: chartData,
-                      xValueMapper: (ChartSampleData sales, _) => sales.x,
-                      yValueMapper: (ChartSampleData sales, _) => sales.yValue,
-                      name: '12-14',
-                    ),
-                    StackedLineSeries<ChartSampleData, DateTime>(
-                      dataSource: chartData,
-                      xValueMapper: (ChartSampleData sales, _) => sales.x,
-                      yValueMapper: (ChartSampleData sales, _) => sales.yValue,
-                      name: '14-16',
-                    ),
-                    StackedLineSeries<ChartSampleData, DateTime>(
-                      dataSource: chartData,
-                      xValueMapper: (ChartSampleData sales, _) => sales.x,
-                      yValueMapper: (ChartSampleData sales, _) => sales.yValue,
-                      name: '16-18',
-                    ),
-                    StackedLineSeries<ChartSampleData, DateTime>(
-                      dataSource: chartData,
-                      xValueMapper: (ChartSampleData sales, _) => sales.x,
-                      yValueMapper: (ChartSampleData sales, _) => sales.yValue,
-                      name: '18-20',
-                    ),
-                    StackedLineSeries<ChartSampleData, DateTime>(
-                      dataSource: chartData,
-                      xValueMapper: (ChartSampleData sales, _) => sales.x,
-                      yValueMapper: (ChartSampleData sales, _) => sales.yValue,
-                      name: '20-22',
-                    ),
-                    StackedLineSeries<ChartSampleData, DateTime>(
-                      dataSource: chartData,
-                      xValueMapper: (ChartSampleData sales, _) => sales.x,
-                      yValueMapper: (ChartSampleData sales, _) => sales.yValue,
-                      name: '22-24',
-                    )
-                  ])),
+          child: FutureBuilder(
+              future: futureChartData,
+              builder: (context, AsyncSnapshot<List<DataList>> snapshot) {
+                if (!snapshot.hasData) {
+                  return const Text("loading data");
+                } else {
+                  if (snapshot.hasError) {
+                    return const Text("unknown error");
+                  } else {
+                    return SfCartesianChart(
+                        title: ChartTitle(
+                            text: 'CO.HODGE.OO.LHZ: 2022-05-06T03:19:53Z'),
+                        legend: Legend(isVisible: true),
+                        // tooltipBehavior: _tooltipBehavior,
+                        // zoomPanBehavior: _zoomPanBehavior,
+                        backgroundColor: Colors.transparent,
+                        primaryXAxis: CategoryAxis(
+                            title: AxisTitle(text: 'Time (seconds)'),
+                            isVisible: false),
+                        primaryYAxis: NumericAxis(
+                          isVisible: false,
+                        ),
+                        axes: <ChartAxis>[
+                          NumericAxis(
+                            name: 'xAxis2',
+                            isVisible: false,
+                          ),
+                          NumericAxis(
+                            name: 'xAxis3',
+                            isVisible: false,
+                          ),
+                          NumericAxis(
+                            name: 'xAxis4',
+                            isVisible: false,
+                          ),
+                          NumericAxis(
+                            name: 'xAxis5',
+                            isVisible: false,
+                          ),
+                          NumericAxis(
+                            name: 'xAxis6',
+                            isVisible: false,
+                          ),
+                          NumericAxis(
+                            name: 'xAxis7',
+                            isVisible: false,
+                          ),
+                          NumericAxis(
+                            name: 'xAxis8',
+                            isVisible: false,
+                          ),
+                          NumericAxis(
+                            name: 'xAxis9',
+                            isVisible: false,
+                          ),
+                          NumericAxis(
+                            name: 'xAxis10',
+                            isVisible: false,
+                          ),
+                          NumericAxis(
+                            name: 'xAxis11',
+                            isVisible: false,
+                          ),
+                          NumericAxis(
+                            name: 'xAxis12',
+                            isVisible: false,
+                          ),
+                        ],
+                        series: <ChartSeries>[
+                          LineSeries<DataList, int>(
+                              dataSource:
+                                  snapshot.data!.getRange(0, 240).toList(),
+                              xValueMapper: (DataList sales, _) => sales.time,
+                              yValueMapper: (DataList sales, _) =>
+                                  sales.y + 200,
+                              name: '00:00',
+                              width: 2),
+                          LineSeries<DataList, int>(
+                            dataSource:
+                                snapshot.data!.getRange(240, 480).toList(),
+                            xValueMapper: (DataList sales, _) => sales.time,
+                            yValueMapper: (DataList sales, _) => sales.y,
+                            name: '02:00',
+                            width: 2,
+                            xAxisName: 'xAxis2',
+                          ),
+                          LineSeries<DataList, int>(
+                              dataSource:
+                                  snapshot.data!.getRange(480, 720).toList(),
+                              xValueMapper: (DataList sales, _) => sales.time,
+                              yValueMapper: (DataList sales, _) =>
+                                  sales.y - 200,
+                              name: '04:00',
+                              width: 2,
+                              xAxisName: 'xAxis3'),
+                          LineSeries<DataList, int>(
+                              dataSource:
+                                  snapshot.data!.getRange(720, 960).toList(),
+                              xValueMapper: (DataList sales, _) => sales.time,
+                              yValueMapper: (DataList sales, _) =>
+                                  sales.y - 400,
+                              name: '06:00',
+                              width: 2,
+                              xAxisName: 'xAxis4'),
+                          LineSeries<DataList, int>(
+                              dataSource:
+                                  snapshot.data!.getRange(960, 1200).toList(),
+                              xValueMapper: (DataList sales, _) => sales.time,
+                              yValueMapper: (DataList sales, _) =>
+                                  sales.y - 600,
+                              name: '08:00',
+                              width: 2,
+                              xAxisName: 'xAxis5'),
+                          LineSeries<DataList, int>(
+                              dataSource:
+                                  snapshot.data!.getRange(1200, 1440).toList(),
+                              xValueMapper: (DataList sales, _) => sales.time,
+                              yValueMapper: (DataList sales, _) =>
+                                  sales.y - 800,
+                              name: '10:00',
+                              width: 2,
+                              xAxisName: 'xAxis6'),
+                          LineSeries<DataList, int>(
+                              dataSource:
+                                  snapshot.data!.getRange(1440, 1680).toList(),
+                              xValueMapper: (DataList sales, _) => sales.time,
+                              yValueMapper: (DataList sales, _) =>
+                                  sales.y - 1000,
+                              name: '12:00',
+                              width: 2,
+                              xAxisName: 'xAxis7'),
+                          LineSeries<DataList, int>(
+                              dataSource:
+                                  snapshot.data!.getRange(1680, 1920).toList(),
+                              xValueMapper: (DataList sales, _) => sales.time,
+                              yValueMapper: (DataList sales, _) =>
+                                  sales.y - 1200,
+                              name: '14:00',
+                              width: 2,
+                              xAxisName: 'xAxis8'),
+                          LineSeries<DataList, int>(
+                              dataSource:
+                                  snapshot.data!.getRange(1920, 2160).toList(),
+                              xValueMapper: (DataList sales, _) => sales.time,
+                              yValueMapper: (DataList sales, _) =>
+                                  sales.y - 1400,
+                              name: '16:00',
+                              width: 2,
+                              xAxisName: 'xAxis9'),
+                          LineSeries<DataList, int>(
+                              dataSource:
+                                  snapshot.data!.getRange(2160, 2400).toList(),
+                              xValueMapper: (DataList sales, _) => sales.time,
+                              yValueMapper: (DataList sales, _) =>
+                                  sales.y - 1600,
+                              name: '18:00',
+                              width: 2,
+                              xAxisName: 'xAxis10'),
+                          LineSeries<DataList, int>(
+                              dataSource:
+                                  snapshot.data!.getRange(2400, 2640).toList(),
+                              xValueMapper: (DataList sales, _) => sales.time,
+                              yValueMapper: (DataList sales, _) =>
+                                  sales.y - 1800,
+                              name: '20:00',
+                              width: 2,
+                              xAxisName: 'xAxis11'),
+                          LineSeries<DataList, int>(
+                              dataSource: snapshot.data!
+                                  .getRange(2640, snapshot.data!.length)
+                                  .toList(),
+                              xValueMapper: (DataList sales, _) => sales.time,
+                              yValueMapper: (DataList sales, _) =>
+                                  sales.y - 2000,
+                              name: '22:00',
+                              width: 2,
+                              xAxisName: 'xAxis12'),
+                        ]);
+                  }
+                }
+              }),
         ));
   }
-
-  List<ChartSampleData> chartData = <ChartSampleData>[
-    ChartSampleData(x: DateTime(2022, 1, 1, 1), yValue: 1.13),
-    ChartSampleData(x: DateTime(2022, 1, 2, 2), yValue: 1.12),
-    ChartSampleData(x: DateTime(2022, 1, 3, 3), yValue: 1.08),
-    ChartSampleData(x: DateTime(2022, 1, 4, 4), yValue: 1.12),
-    ChartSampleData(x: DateTime(2022, 1, 5, 5), yValue: 1.1),
-    ChartSampleData(x: DateTime(2022, 1, 6, 6), yValue: 1.12),
-    ChartSampleData(x: DateTime(2022, 1, 7, 7), yValue: 1.1),
-    ChartSampleData(x: DateTime(2022, 1, 8, 8), yValue: 1.12),
-    ChartSampleData(x: DateTime(2022, 1, 9, 9), yValue: 1.16),
-    ChartSampleData(x: DateTime(2022, 1, 10, 10), yValue: 1.1),
-    ChartSampleData(x: DateTime(2022, 1, 11, 11), yValue: 1.1),
-    ChartSampleData(x: DateTime(2022, 1, 12, 12), yValue: 1.1),
-  ];
-}
-
-class ChartSampleData {
-  ChartSampleData({this.x, this.yValue});
-
-  final DateTime? x;
-  final double? yValue;
 }
