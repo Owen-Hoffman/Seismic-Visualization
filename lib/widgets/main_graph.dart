@@ -1,12 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:seismic_visualization/widgets/helicorder.dart';
 import 'package:seismic_visualization/widgets/jsonParser.dart';
+import 'dart:html' as html;
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'dart:async';
-import 'dart:math' as math;
 
 class RealTimeData extends StatefulWidget {
-  RealTimeData({Key? key, required this.title}) : super(key: key);
-  final String title;
+  final networkHolder;
+  final stationHolder;
+  final locationHolder;
+
+  RealTimeData(
+      {Key? key,
+      @required this.networkHolder,
+      this.stationHolder,
+      this.locationHolder})
+      : super(key: key);
+  // final String title;
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
@@ -24,7 +34,8 @@ class _MyHomePageState extends State<RealTimeData> {
   late var lowerSize = 0;
 
   Future<void> getChartData() async {
-    chartData = liveDataParsing();
+    chartData = liveDataParsing('' + widget.networkHolder,
+        '' + widget.stationHolder, '' + widget.locationHolder);
     chartData2 = await chartData;
     var size = chartData2.length;
     var range = (size / 3).truncate();
@@ -44,7 +55,7 @@ class _MyHomePageState extends State<RealTimeData> {
     lowerSplitList.add(DataList(time: lowerSize++, y: upperSplitList[0].y));
     lowerSplitList.removeAt(0);
     upperSplitList.removeAt(0);
-    if (upperSplitList.length < 10) {
+    if (upperSplitList.length < 5) {
       refreshData();
     }
     _chartSeriesController.updateDataSource(
@@ -85,35 +96,56 @@ class _MyHomePageState extends State<RealTimeData> {
                   primary: Colors.black,
                 ),
                 onPressed: () {
-                  Navigator.pushNamed(context, '/Helicorder');
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => Helicorder(
+                              networkHolder: widget.networkHolder,
+                              stationHolder: widget.stationHolder,
+                              locationHolder: widget.locationHolder)));
                 },
                 child: const Text('Helicorder'),
               ),
-            ]),
+            ],
+            leading: IconButton(
+              color: Colors.black,
+              icon: const Icon(Icons.add_chart),
+              onPressed: () {
+                Navigator.pushNamed(context, '/');
+              },
+            )),
         body: Center(
           child: FutureBuilder(
               future: chartData,
               builder: (context, AsyncSnapshot<List<DataList>> snapshot) {
                 if (snapshot.connectionState != ConnectionState.done) {
-                  return Text('loading...');
+                  return const CircularProgressIndicator();
                 } else {
                   if (snapshot.hasError) {
                     return Column(
                       children: [
                         const Icon(Icons.error),
-                        const Text('Failed to fetch data.'),
+                        const Text(
+                            'Incorrect query parameters or the station is not responding'),
                         ElevatedButton(
-                          child: const Text('RETRY'),
-                          onPressed: () {},
+                          child: const Text('Reload'),
+                          onPressed: () {
+                            html.window.location.reload();
+                          },
                         ),
                       ],
                     );
                   } else {
                     print(snapshot.connectionState);
-                    print(snapshot.data!);
-                    print("we now have valid data");
                     return SfCartesianChart(
-                        title: ChartTitle(text: 'CO.HODGE.OO.LH?'),
+                        title: ChartTitle(
+                            text: '' +
+                                widget.networkHolder +
+                                '.' +
+                                widget.stationHolder +
+                                '.' +
+                                widget.locationHolder +
+                                '.LH?'),
                         legend: Legend(isVisible: true),
                         tooltipBehavior: _tooltipBehavior,
                         zoomPanBehavior: _zoomPanBehavior,

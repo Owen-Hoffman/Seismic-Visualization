@@ -1,13 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:seismic_visualization/widgets/main_graph.dart';
 
-void main() => runApp(new MyApp());
+class StationQuery extends StatelessWidget {
+  final networkCode = TextEditingController();
+  final stationCode = TextEditingController();
+  final locationCode = TextEditingController();
 
-class MyApp extends StatelessWidget {
+  getItemAndNavigate(BuildContext context) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => RealTimeData(
+                networkHolder: networkCode.text,
+                stationHolder: stationCode.text,
+                locationHolder: locationCode.text)));
+  }
+
   @override
   Widget build(BuildContext context) {
     Color hexToColor(String code) {
       return new Color(int.parse(code.substring(1, 7), radix: 16) + 0xFF000000);
     }
+
+    networkCode.text = 'IU';
+    stationCode.text = 'ANMO';
+    locationCode.text = '00';
 
     return MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -29,7 +46,7 @@ class MyApp extends StatelessWidget {
                     SizedBox(
                       width: 500,
                       child: TextFormField(
-                        initialValue: 'IU',
+                        controller: networkCode,
                         decoration: InputDecoration(
                           labelText: "Network Code",
                           fillColor: Colors.white,
@@ -51,7 +68,7 @@ class MyApp extends StatelessWidget {
                     SizedBox(
                       width: 500,
                       child: TextFormField(
-                        initialValue: 'ANMO',
+                        controller: stationCode,
                         decoration: InputDecoration(
                           labelText: "Station Code",
                           fillColor: Colors.white,
@@ -73,7 +90,7 @@ class MyApp extends StatelessWidget {
                     SizedBox(
                       width: 500,
                       child: TextFormField(
-                        initialValue: '00',
+                        controller: locationCode,
                         decoration: InputDecoration(
                           labelText: "Location Code",
                           fillColor: Colors.white,
@@ -93,10 +110,9 @@ class MyApp extends StatelessWidget {
                     ),
                     const Padding(padding: EdgeInsets.only(top: 20.0)),
                     ElevatedButton(
-                        child: Text("Submit"),
-                        onPressed: () async {
-                          print("data passed");
-                        }),
+                      child: Text("Submit"),
+                      onPressed: () => getItemAndNavigate(context),
+                    )
                   ])
                 ])))));
   }

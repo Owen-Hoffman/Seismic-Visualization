@@ -44,14 +44,15 @@
   <script>
     var serviceWorkerVersion = null;
     var scriptLoaded = false;
-    async function getSeismicData(networkCode, stationCode, locationCode, channelCode) {
-      const plotEnd = seisplotjs.moment.utc().endOf('hour').add(1, 'millisecond');
-      let timeWindow = new seisplotjs.util.StartEndDuration('2022-04-06T00:00:53Z', null, seisplotjs.moment.duration(24, 'hours'));      
+    async function getSeismicData(networkCode, stationCode, locationCode, startTime) {
+      // const plotEnd = seisplotjs.moment.utc().endOf('hour').add(1, 'millisecond');
+      const duration = seisplotjs.moment.duration(1, 'day')
+      let timeWindow = new seisplotjs.util.StartEndDuration(startTime, null, duration);      
       let dsQuery = new seisplotjs.fdsndataselect.DataSelectQuery();
       dsQuery.networkCode(networkCode)
         .stationCode(stationCode)
         .locationCode(locationCode)
-        .channelCode(channelCode)
+        .channelCode('LH?')
         .timeWindow(timeWindow);
       queryPromise = dsQuery.querySeismograms();
       seisArray = await queryPromise;
