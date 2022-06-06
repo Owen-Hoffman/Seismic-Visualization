@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
-import 'widgets/main_graph.dart';
+import 'widgets/map.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(MaterialApp(
+    debugShowCheckedModeBanner: false,
+    initialRoute: '/',
+    routes: {
+      '/': (context) => StationQuery(),
+    },
+  ));
 }

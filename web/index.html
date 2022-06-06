@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -23,15 +24,19 @@
   <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="seismic_visualization">
+  <meta name="apple-mobile-web-app-title" content="demo">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" href="favicon.png" />
 
-  <title>seismic_visualization</title>
+  <!-- SCR for seisplot -->
+  <script src="https://www.seis.sc.edu/downloads/seisplotjs/seisplotjs_2.0.1_standalone.js"></script>
+
+  <title>demo</title>
   <link rel="manifest" href="manifest.json">
 </head>
+
 <body>
   <!-- This script installs service_worker.js to provide PWA functionality to
        application. For more information, see:
@@ -39,6 +44,52 @@
   <script>
     var serviceWorkerVersion = null;
     var scriptLoaded = false;
+    async function getSeismicData(networkCode, stationCode, locationCode, startTime) {
+      // const plotEnd = seisplotjs.moment.utc().endOf('hour').add(1, 'millisecond');
+      const duration = seisplotjs.moment.duration(1, 'day')
+      let timeWindow = new seisplotjs.util.StartEndDuration(startTime, null, duration);      
+      let dsQuery = new seisplotjs.fdsndataselect.DataSelectQuery();
+      dsQuery.networkCode(networkCode)
+        .stationCode(stationCode)
+        .locationCode(locationCode)
+        .channelCode('LH?')
+        .timeWindow(timeWindow);
+      queryPromise = dsQuery.querySeismograms();
+      seisArray = await queryPromise;
+      let seismogram = seisArray[0];
+      let seisData = seisplotjs.seismogram.SeismogramDisplayData.fromSeismogram(seismogram);
+      let div = seisplotjs.d3.select('div#myseismograph');
+      let seisConfig = new seisplotjs.seismographconfig.SeismographConfig();
+      seisConfig.title = seismogram.codes();
+      let graph = new seisplotjs.seismograph.Seismograph(div, seisConfig, seisData);
+
+      var graphText = JSON.stringify(seisData);
+      return graphText;
+    }
+    async function getLiveSeismicData(networkCode, stationCode, locationCode, channelCode) {
+      const duration = seisplotjs.moment.duration(5, 'minutes');
+      let timeWindow = new seisplotjs.util.StartEndDuration(null, null, duration);      
+      let dsQuery = new seisplotjs.fdsndataselect.DataSelectQuery();
+      dsQuery.networkCode(networkCode)
+        .stationCode(stationCode)
+        .locationCode(locationCode)
+        .channelCode(channelCode)
+        .timeWindow(timeWindow);
+      queryPromise = dsQuery.querySeismograms();
+      seisArray = await queryPromise;
+      let seismogram = seisArray[0];
+      let seisData = seisplotjs.seismogram.SeismogramDisplayData.fromSeismogram(seismogram);
+      let div = seisplotjs.d3.select('div#myseismograph');
+      let seisConfig = new seisplotjs.seismographconfig.SeismographConfig();
+      seisConfig.title = seismogram.codes();
+      let graph = new seisplotjs.seismograph.Seismograph(div, seisConfig, seisData);
+
+      var graphText = JSON.stringify(seisData);
+      return graphText;
+    }
+
+    // getSeismicData('CO', 'HODGE', '00', 'LHZ').then(data => { console.log(data); });
+
     function loadMainDartJs() {
       if (scriptLoaded) {
         return;
@@ -101,4 +152,5 @@
     }
   </script>
 </body>
+
 </html>

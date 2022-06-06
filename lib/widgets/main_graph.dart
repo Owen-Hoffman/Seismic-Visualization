@@ -1,103 +1,177 @@
 import 'package:flutter/material.dart';
+import 'package:seismic_visualization/widgets/helicorder.dart';
+import 'package:seismic_visualization/widgets/jsonParser.dart';
+import 'dart:html' as html;
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'dart:async';
-import 'dart:math' as math;
 
-class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-      ),
-      home: MyHomePage(title: 'graph home page'),
-    );
-  }
-}
+class RealTimeData extends StatefulWidget {
+  final networkHolder;
+  final stationHolder;
+  final locationHolder;
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title}) : super(key: key);
-  final String title;
+  RealTimeData(
+      {Key? key,
+      @required this.networkHolder,
+      this.stationHolder,
+      this.locationHolder})
+      : super(key: key);
+  // final String title;
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  late List<LiveData> chartData;
+class _MyHomePageState extends State<RealTimeData> {
+  late TooltipBehavior _tooltipBehavior;
+  late ZoomPanBehavior _zoomPanBehavior;
+  late Future<List<DataList>> chartData;
+  late List<DataList> chartData2 = [];
+  late List<DataList> lowerSplitList = [];
+  late List<DataList> upperSplitList = [];
+
   late ChartSeriesController _chartSeriesController;
+  late var time = 0;
+  late var lowerSize = 0;
+
+  Future<void> getChartData() async {
+    chartData = liveDataParsing('' + widget.networkHolder,
+        '' + widget.stationHolder, '' + widget.locationHolder);
+    chartData2 = await chartData;
+    var size = chartData2.length;
+    var range = (size / 3).truncate();
+    lowerSplitList = chartData2.getRange(0, range).toList();
+    lowerSize = lowerSplitList.length;
+    upperSplitList = chartData2.getRange(range, size).toList();
+    time = size;
+  }
+
+  void refreshData() async {
+    setState(() {
+      getChartData();
+    });
+  }
+
+  Future<void> _updateDataSource(Timer timer) async {
+    lowerSplitList.add(DataList(time: lowerSize++, y: upperSplitList[0].y));
+    lowerSplitList.removeAt(0);
+    upperSplitList.removeAt(0);
+    if (upperSplitList.length < 5) {
+      refreshData();
+    }
+    _chartSeriesController.updateDataSource(
+      addedDataIndex: lowerSplitList.length - 1,
+      removedDataIndex: 0,
+    );
+  }
 
   @override
   void initState() {
-    chartData = getChartData();
-    Timer.periodic(const Duration(seconds: 5), updateDataSource);
+    _tooltipBehavior = TooltipBehavior(enable: true, format: 'point.y');
+    _zoomPanBehavior = ZoomPanBehavior(
+        enableDoubleTapZooming: true,
+        zoomMode: ZoomMode.xy,
+        enablePanning: true);
+    getChartData();
+    Timer.periodic(const Duration(milliseconds: 1000), _updateDataSource);
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-        child: Scaffold(
-            body: SfCartesianChart(
-                series: <ChartSeries<LiveData, int>>[
-          AreaSeries<LiveData, int>(
-            onRendererCreated: (ChartSeriesController controller) {
-              _chartSeriesController = controller;
-            },
-            dataSource: chartData,
-            color: const Color.fromRGBO(192, 108, 132, 1),
-            xValueMapper: (LiveData sales, _) => sales.time,
-            yValueMapper: (LiveData sales, _) => sales.speed,
-          )
-        ],
-                primaryXAxis: CategoryAxis(
-                    majorGridLines: const MajorGridLines(width: 0),
-                    edgeLabelPlacement: EdgeLabelPlacement.shift,
-                    interval: 3,
-                    title: AxisTitle(text: 'Time (minutes)')),
-                primaryYAxis: NumericAxis(
-                    axisLine: const AxisLine(width: 0),
-                    majorTickLines: const MajorTickLines(size: 0),
-                    title: AxisTitle(text: 'Magnitude')))));
+    return Scaffold(
+        appBar: AppBar(
+            centerTitle: true,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            title: const Text(
+              'Realtime',
+              style: TextStyle(
+                color: Colors.black,
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                style: TextButton.styleFrom(
+                  primary: Colors.black,
+                ),
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => Helicorder(
+                              networkHolder: widget.networkHolder,
+                              stationHolder: widget.stationHolder,
+                              locationHolder: widget.locationHolder)));
+                },
+                child: const Text('Helicorder'),
+              ),
+            ],
+            leading: IconButton(
+              color: Colors.black,
+              icon: const Icon(Icons.add_chart),
+              onPressed: () {
+                Navigator.pushNamed(context, '/');
+              },
+            )),
+        body: Center(
+          child: FutureBuilder(
+              future: chartData,
+              builder: (context, AsyncSnapshot<List<DataList>> snapshot) {
+                if (snapshot.connectionState != ConnectionState.done) {
+                  return const CircularProgressIndicator();
+                } else {
+                  if (snapshot.hasError) {
+                    return Column(
+                      children: [
+                        const Icon(Icons.error),
+                        const Text(
+                            'Incorrect query parameters or the station is not responding'),
+                        ElevatedButton(
+                          child: const Text('Reload'),
+                          onPressed: () {
+                            html.window.location.reload();
+                          },
+                        ),
+                      ],
+                    );
+                  } else {
+                    print(snapshot.connectionState);
+                    return SfCartesianChart(
+                        title: ChartTitle(
+                            text: '' +
+                                widget.networkHolder +
+                                '.' +
+                                widget.stationHolder +
+                                '.' +
+                                widget.locationHolder +
+                                '.LH?'),
+                        legend: Legend(isVisible: true),
+                        tooltipBehavior: _tooltipBehavior,
+                        zoomPanBehavior: _zoomPanBehavior,
+                        series: <ChartSeries>[
+                          LineSeries<DataList, int>(
+                              name: 'Amplitude',
+                              onRendererCreated:
+                                  (ChartSeriesController controller) {
+                                _chartSeriesController = controller;
+                              },
+                              dataSource: lowerSplitList,
+                              xValueMapper: (DataList sales, _) => sales.time,
+                              yValueMapper: (DataList sales, _) => sales.y,
+                              enableTooltip: true)
+                        ],
+                        primaryXAxis: NumericAxis(
+                          edgeLabelPlacement: EdgeLabelPlacement.shift,
+                          isVisible: false,
+                          title: AxisTitle(text: 'Time (seconds)'),
+                        ),
+                        primaryYAxis: NumericAxis(
+                          title: AxisTitle(text: 'Amplitude (centered)'),
+                        ));
+                  }
+                }
+              }),
+        ));
   }
-
-  int time = 19;
-  void updateDataSource(Timer timer) {
-    chartData.add(LiveData(time++, (math.Random().nextInt(60) + 30)));
-    chartData.removeAt(0);
-    _chartSeriesController.updateDataSource(
-        addedDataIndex: chartData.length - 1, removedDataIndex: 0);
-  }
-
-  List<LiveData> getChartData() {
-    return <LiveData>[
-      LiveData(0, 42),
-      LiveData(1, 47),
-      LiveData(2, 43),
-      LiveData(3, 49),
-      LiveData(4, 54),
-      LiveData(5, 41),
-      LiveData(6, 58),
-      LiveData(7, 51),
-      LiveData(8, 98),
-      LiveData(9, 41),
-      LiveData(10, 53),
-      LiveData(11, 72),
-      LiveData(12, 86),
-      LiveData(13, 52),
-      LiveData(14, 94),
-      LiveData(15, 92),
-      LiveData(16, 86),
-      LiveData(17, 72),
-      LiveData(18, 94)
-    ];
-  }
-}
-
-class LiveData {
-  LiveData(this.time, this.speed);
-  final int time;
-  final num speed;
 }
