@@ -24,7 +24,9 @@ class RealTimeData extends StatefulWidget {
 class _MyHomePageState extends State<RealTimeData> {
   late TooltipBehavior _tooltipBehavior;
   late ZoomPanBehavior _zoomPanBehavior;
+
   late Future<List<DataList>> chartData;
+
   late List<DataList> chartData2 = [];
   late List<DataList> lowerSplitList = [];
   late List<DataList> upperSplitList = [];

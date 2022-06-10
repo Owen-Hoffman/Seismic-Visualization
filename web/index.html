@@ -44,8 +44,8 @@
   <script>
     var serviceWorkerVersion = null;
     var scriptLoaded = false;
+    
     async function getSeismicData(networkCode, stationCode, locationCode, startTime) {
-      // const plotEnd = seisplotjs.moment.utc().endOf('hour').add(1, 'millisecond');
       const duration = seisplotjs.moment.duration(1, 'day')
       let timeWindow = new seisplotjs.util.StartEndDuration(startTime, null, duration);      
       let dsQuery = new seisplotjs.fdsndataselect.DataSelectQuery();
@@ -66,6 +66,7 @@
       var graphText = JSON.stringify(seisData);
       return graphText;
     }
+
     async function getLiveSeismicData(networkCode, stationCode, locationCode, channelCode) {
       const duration = seisplotjs.moment.duration(5, 'minutes');
       let timeWindow = new seisplotjs.util.StartEndDuration(null, null, duration);      
@@ -87,8 +88,6 @@
       var graphText = JSON.stringify(seisData);
       return graphText;
     }
-
-    // getSeismicData('CO', 'HODGE', '00', 'LHZ').then(data => { console.log(data); });
 
     function loadMainDartJs() {
       if (scriptLoaded) {

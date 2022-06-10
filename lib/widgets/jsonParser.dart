@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'dart:js_util';
 import 'package:js/js.dart';
 import 'dart:convert';
@@ -32,10 +31,10 @@ Future<List<DataList>> dataParsing(String networkCode, String stationCode,
   var promise = await promiseToFuture<String>(
       getSeismicData(networkCode, stationCode, locationCode, startTime));
   //isolate heavy parsing task
-  return compute(parsePromise, promise);
+  return compute(parseFuture, promise);
 }
 
-List<DataList> parsePromise(var promise) {
+List<DataList> parseFuture(var promise) {
   Map<String, dynamic> decodeData = jsonDecode(promise) as Map<String, dynamic>;
   var tagObjsJson = decodeData['_seismogram']['_segmentArray'][0]['_y'];
   int i = 0;
@@ -63,6 +62,7 @@ List<DataList> parsePromise(var promise) {
     var value = test.elementAt(i) - test.elementAt(i - 1);
     detrendList.add(DataList(time: i, y: value));
   }
+
   return detrendList;
 }
 
