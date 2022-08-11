@@ -1,4 +1,4 @@
-# seismic_visualization
+# Seismic Visualization
 
 A web application for seismic visualization
 
@@ -19,12 +19,11 @@ The libraries I used to accomplish common JS interoperability tasks.
 
 ## Project Summary
 
-A dart page requests the user to select a station. This information is passed to a JS function in a html page which in turn utilizes functions from the external library to connect to the SEEDLink server and retrieve the time series of the user specified station.
+A dart page requests the user to select a station. This information is passed to a JS function in a html page which in turn utilizes functions from the seisplot.js external library to connect to the SEEDLink server and retrieve the time series of the user specified station.
 
 This data is then parsed into a json string and returned. The JS function is then called from a dart file as an external function. The json string is at this point a promise, which is converted to a future. This json future is then parsed into a Dart class list, allowing the data to be accessible to the rest of the Dart application. This usable data is asynchronous. While the data is fetched and parsed the rest of the program must wait. This is done using the async and await keywords. The list is still a future, meaning that it has two states, completed or incomplete. This data is subject to change, and so to graph it the FutureBuilder widget is used. This widget plots the seismic data based on the latest snapshot obtained from the future.
 
 In this project, I graph the data on a line chart within the future builder. When the incoming string is at a certain length the data is refreshed, updating the graph with fresh data.
-
 
 ## Future Additions
 
@@ -36,3 +35,7 @@ In this project, I graph the data on a line chart within the future builder. Whe
 ## Web View
 
 - [Pages](https://owen-hoffman.github.io/#/)
+
+## Source Code
+
+- [GitHub](https://github.com/Owen-Hoffman/Seismic-Visualization)
