@@ -31,6 +31,7 @@ In this project, I graph the data on a line chart within the future builder. Whe
 - A different chart library may be considered for the helicorder graph due to limitations with the current one.
 - Implement an [on demand loading](https://help.syncfusion.com/flutter/cartesian-charts/on-demand-loading) function for endless scrolling through history.
 - Add a form for selecting the station channel
+- Fix bug that prevents current day from being displayed on helicorder
 
 ## Web View
 
